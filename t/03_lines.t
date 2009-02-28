@@ -32,15 +32,26 @@ MULTI: {
 EVALY: {
     # check that we can be called in an eval
 
-    local $TODO = "Eval fail!";
+    my $ret;
+
+    eval q[
+        $ret = mdo {
+           $Monad::Current = 'Monad::Just';
+           munit 3;
+        };];
+    if ($@) {
+        fail "Error $@";
+    } else {
+        is_deeply( $ret, $expected, "Sanity check for next (partial line) test" );
+    }
     
-    my $ret = eval q[
-        mdo {
-           mbind $x = Just 1; 
-           mbind $y = Just 2;
-           munit $x + $y;
-           };
-        ];
+    local $TODO = "Eval fail for scope end!";
+
+    eval q[
+        $ret = mdo {
+           mbind $x = Just 1 + 2;  
+           munit $x;
+           };];
     if ($@) {
         fail "Error $@";
     } else {
