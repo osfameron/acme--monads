@@ -4,8 +4,8 @@ package Monad;
 use strict; use warnings;
 use Devel::Declare;
 use Sub::Name;
-use Scope::Guard;
 use B::Deparse;
+use B::Hooks::EndOfScope;
 
 $Monad::Current = undef;
 
@@ -29,7 +29,7 @@ would desugar to
         mbind (Nothing, sub {
             my $y = shift;
             print $x + $y;
-    # now let's close the scopes with Scope::Guard !!!
+    # now let's close the scopes with Scope::Guard^WB::Hooks::EndOfScope
         }
       }
     }
@@ -132,7 +132,7 @@ sub import {
         # skipspace;
         my $linestr = Devel::Declare::get_linestr;
 
-        my $debug = $linestr; substr($debug, $Offset, 0, '>>HERE<<'); # die $debug
+        # my $debug = $linestr; substr($debug, $Offset, 0, '>>HERE<<'); # die $debug
 
         substr($linestr, $Offset, 0) = $inject;
         Devel::Declare::set_linestr($linestr);
@@ -184,7 +184,7 @@ sub import {
     }
 
     # Set up the parser scoping hacks that allow us to omit the final
-    # semicolon
+    # closing brace
     sub scope_injector_call {
         my $pkg = __PACKAGE__;
         return " BEGIN { ${pkg}::inject_scope('}') }; ";
@@ -193,13 +193,14 @@ sub import {
         # normally scope injection adds a ;.
         # we don't need that but we *do* need to close the next '}'
         my $end_of_scope = shift || ';';
-        $^H |= 0x120000;
-        $^H{DD_METHODHANDLERS} = Scope::Guard->new(sub {
+
+        on_scope_end {
             my $linestr = Devel::Declare::get_linestr;
+            return unless defined $linestr;
             my $offset = Devel::Declare::get_linestr_offset;
             substr($linestr, $offset, 0) = $end_of_scope;
             Devel::Declare::set_linestr($linestr);
-        });
+            };
     }
 }
 
