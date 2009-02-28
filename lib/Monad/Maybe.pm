@@ -3,7 +3,7 @@
 package Monad::Maybe;
 use strict; use warnings;
 
-use base 'Monad';
+use base 'Monad::Base';
 
 use Sub::Exporter -setup => {
     exports => [ qw/ Just Nothing / ],

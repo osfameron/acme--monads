@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 package Monad::Reader;
-use base 'Monad';
+use base 'Monad::Base';
 
 use Sub::Exporter -setup => {
     exports => [ qw/ Reader / ],

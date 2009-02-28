@@ -11,6 +11,7 @@ $Monad::Current = undef;
 
 =head1 SYNOPSIS
 
+ use Monad; # to get the syntax
  use Monad::Maybe;
 
  mdo {
@@ -103,7 +104,7 @@ sub import {
         skipspace;
     
         my $linestr = Devel::Declare::get_linestr();
-        if (substr($linestr, $Offset) =~ /((\$\w+)\s*(?:=))/) { 
+        if (substr($linestr, $Offset) =~ /^\s*((\$\w+)\s*(?:=))/) { 
             my $var = $2;
             substr($linestr, $Offset, length $1) = '';
             Devel::Declare::set_linestr($linestr);
@@ -209,21 +210,6 @@ sub munit {
 sub mfail {
     die "Not in a monad!" unless $Monad::Current;
     $Monad::Current->mFail(shift);
-}
-
-sub mBind {
-    my ($self, $f) = @_;
-    return $f->($self->mJoin); # default Identity monad
-}
-
-sub mUnit {
-    my ($self, $value) = @_;
-    bless \$value, (ref $self) || $self;
-}
-
-sub mJoin {
-    my $self = shift;
-    return $$self;
 }
 
 1;

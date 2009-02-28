@@ -2,7 +2,7 @@
 
 package Monad::List;
 use strict; use warnings;
-use base 'Monad';
+use base 'Monad::Base';
 
 use Sub::Exporter -setup => {
     exports => [ qw/ List guard / ],
@@ -11,7 +11,7 @@ use Sub::Exporter -setup => {
         }
     };
 
-sub List { Monad::List->return(@_) }
+sub List { Monad::List->mUnit(@_) }
 
 sub guard {
     my $bool = shift;
@@ -21,7 +21,7 @@ sub guard {
 sub mBind {
     my ($self, $f) = @_;
     # Perl's map is already a concatMap
-    return $self->return( map { @{ $f->($_)} } $self->mJoin );
+    return List ( map { @{ $f->($_)} } $self->mJoin );
 }
 
 sub mJoin {
