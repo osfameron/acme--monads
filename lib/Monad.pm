@@ -138,13 +138,27 @@ sub import {
         Devel::Declare::set_linestr($linestr);
     }
 
+    sub inject_after_block_start {
+        my $inject = shift;
+        skipspace;
+        my $linestr = Devel::Declare::get_linestr;
+
+        # my $debug = $linestr; substr($debug, $Offset, 0, '>>HERE<<'); # die $debug
+
+        # +1 for the '{' of the opening block
+        substr($linestr, $Offset+1, 0) = $inject;
+        Devel::Declare::set_linestr($linestr);
+    }
+
     # This parser is likely to be semi-standard
     # It will call a make_proto_unwrap, which is likely to be heavily customized
     sub parse_mdo {
         local ($Declarator, $Offset) = @_;
         skip_declarator;
         # my $name = strip_name;   # won't have a name usually
-        my $proto = strip_proto; # might be the name of the monad?
+        $Monad::Proto = strip_proto; # might be the name of the monad?
+
+        inject_after_block_start("local \$Monad::Proto = q{$Monad::Proto};");
 
         my $installer = sub (&) {
             my $f = shift;
