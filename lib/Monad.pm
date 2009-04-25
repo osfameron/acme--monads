@@ -166,6 +166,7 @@ sub import {
         my $decl = $var ? "my $var = shift;" : '';
         my $inject = qq[ +($bound) => sub { $scope_injector; $decl ]; # }
         inject_after_mbind($inject);
+        warn "parse_mbind about to shadow" if $Monad::DEBUG;
 
         my $installer = sub ($&) {
             my ($bound, $f) = @_;

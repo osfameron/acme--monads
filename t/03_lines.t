@@ -34,17 +34,20 @@ EVALY: {
 
     my $ret;
 
+    local $Monad::DEBUG = 1;
+
     eval q[
         $ret = mdo {
            $Monad::Current = 'Monad::Just';
            munit 3;
-        };];
+        };
+        ];
     if ($@) {
         fail "Error $@";
     } else {
         is_deeply( $ret, $expected, "Sanity check for next (partial line) test" );
     }
-    
+
     local $TODO = "Eval fail for scope end!";
 
     eval q[
@@ -57,6 +60,18 @@ EVALY: {
     } else {
         is_deeply( $ret, $expected, "Sanity check for next (partial line) test" );
     }
+
+=begin This should desugar to
+
+mdo {
+    mbind Just 1+2, sub {
+        my ($x) = shift;
+        munit $x;
+        }
+    };
+
+=cut
+    
 }
 
 __DATA__
